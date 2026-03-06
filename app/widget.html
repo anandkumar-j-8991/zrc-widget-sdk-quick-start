@@ -1,0 +1,2643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoho CRM Widget SDK Tester</title>
+  <script src="https://live.zwidgets.com/js-sdk/1.5/ZohoEmbededAppSDK.min.js"></script>
+  <style>
+    :root {
+      --primary: #4e8df5;
+      --primary-dark: #3a6fd8;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text: #333;
+      --text-light: #666;
+      --border: #e0e4e8;
+      --code-bg: #1e1e2e;
+      --code-text: #cdd6f4;
+      --sidebar-bg: #1a1d2e;
+      --sidebar-text: #cdd6f4;
+      --sidebar-active: #4e8df5;
+      --sidebar-hover: rgba(78,141,245,0.15);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* --- Sidebar --- */
+    .sidebar {
+      width: 250px;
+      min-width: 250px;
+      background: var(--sidebar-bg);
+      color: var(--sidebar-text);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    .sidebar-header {
+      padding: 18px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-header .logo { font-size: 20px; }
+    .sidebar-section {
+      padding: 10px 0 4px 0;
+    }
+    .sidebar-section-title {
+      padding: 4px 16px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: rgba(205,214,244,0.45);
+      font-weight: 600;
+    }
+    .sidebar-item {
+      padding: 8px 16px 8px 20px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-item:hover {
+      background: var(--sidebar-hover);
+    }
+    .sidebar-item.active {
+      background: var(--sidebar-hover);
+      border-left-color: var(--sidebar-active);
+      color: #fff;
+      font-weight: 600;
+    }
+    .sidebar-item .icon { font-size: 14px; width: 20px; text-align: center; }
+
+    /* --- Main Content --- */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      padding: 12px 24px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h2 { font-size: 17px; font-weight: 600; }
+    .topbar .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .topbar .status-badge.error {
+      background: #fce4ec;
+      color: #c62828;
+    }
+    .topbar .status-badge .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2e7d32;
+    }
+    .topbar .status-badge.error .dot { background: #c62828; }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+    }
+
+    /* --- Panels --- */
+    .panel {
+      display: none;
+    }
+    .panel.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .card p.desc {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .form-group {
+      flex: 1;
+      min-width: 180px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      background: #fafbfc;
+    }
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(78,141,245,0.1);
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #218838; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #c82333; }
+    .btn-warning { background: var(--warning); color: #333; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: var(--bg); }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    /* --- Output Panel --- */
+    .output-section {
+      margin-top: 14px;
+    }
+    .output-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .output-header span {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-light);
+    }
+    .output-box {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 14px;
+      border-radius: 8px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 350px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .output-box:empty::before {
+      content: "Response will appear here...";
+      color: rgba(205,214,244,0.3);
+    }
+
+    /* --- Event Log --- */
+    .event-log {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .event-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-time {
+      color: var(--text-light);
+      font-family: monospace;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .event-name {
+      font-weight: 600;
+      color: var(--primary);
+      min-width: 100px;
+    }
+    .event-data {
+      color: var(--text-light);
+      font-family: monospace;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    /* --- Grid --- */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .sidebar { width: 200px; min-width: 200px; }
+    }
+
+    /* --- Quick action cards --- */
+    .quick-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .quick-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(78,141,245,0.12);
+      transform: translateY(-1px);
+    }
+    .quick-card .qc-icon { font-size: 28px; margin-bottom: 8px; }
+    .quick-card .qc-title { font-size: 13px; font-weight: 600; }
+    .quick-card .qc-desc { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+    /* --- Copy button --- */
+    .btn-copy {
+      padding: 2px 8px;
+      font-size: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--code-text);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.2); }
+
+    /* --- Scrollbar --- */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
+    /* --- Info tag --- */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .tag-get { background: #e3f2fd; color: #1565c0; }
+    .tag-post { background: #e8f5e9; color: #2e7d32; }
+    .tag-put { background: #fff3e0; color: #e65100; }
+    .tag-delete { background: #fce4ec; color: #c62828; }
+    .tag-patch { background: #f3e5f5; color: #7b1fa2; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <span class="logo">&#9889;</span> CRM Widget Tester
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">General</div>
+    <div class="sidebar-item active" data-panel="dashboard">
+      <span class="icon">&#127968;</span> Dashboard
+    </div>
+    <div class="sidebar-item" data-panel="events">
+      <span class="icon">&#128225;</span> Events &amp; Init
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZRC (Zoho Remote Call)</div>
+    <div class="sidebar-item" data-panel="zrc">
+      <span class="icon">&#128279;</span> ZRC Methods
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.API</div>
+    <div class="sidebar-item" data-panel="api-records">
+      <span class="icon">&#128203;</span> Records CRUD
+    </div>
+    <div class="sidebar-item" data-panel="api-search">
+      <span class="icon">&#128269;</span> Search &amp; COQL
+    </div>
+    <div class="sidebar-item" data-panel="api-related">
+      <span class="icon">&#128279;</span> Related Records
+    </div>
+    <div class="sidebar-item" data-panel="api-notes">
+      <span class="icon">&#128221;</span> Notes &amp; Files
+    </div>
+    <div class="sidebar-item" data-panel="api-users">
+      <span class="icon">&#128101;</span> Users &amp; Profiles
+    </div>
+    <div class="sidebar-item" data-panel="api-approvals">
+      <span class="icon">&#9989;</span> Approvals &amp; Blueprint
+    </div>
+    <div class="sidebar-item" data-panel="api-org">
+      <span class="icon">&#127970;</span> Org Variables
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.META</div>
+    <div class="sidebar-item" data-panel="meta">
+      <span class="icon">&#128230;</span> Metadata
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.CONFIG</div>
+    <div class="sidebar-item" data-panel="config">
+      <span class="icon">&#9881;&#65039;</span> Config
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.UI</div>
+    <div class="sidebar-item" data-panel="ui">
+      <span class="icon">&#128444;&#65039;</span> UI Actions
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.CONNECTION</div>
+    <div class="sidebar-item" data-panel="connection">
+      <span class="icon">&#127760;</span> Connections
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.CONNECTOR</div>
+    <div class="sidebar-item" data-panel="connector">
+      <span class="icon">&#128268;</span> Connector
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.HTTP</div>
+    <div class="sidebar-item" data-panel="http">
+      <span class="icon">&#128225;</span> HTTP Requests
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">ZOHO.CRM.FUNCTIONS</div>
+    <div class="sidebar-item" data-panel="functions">
+      <span class="icon">&#9889;</span> Functions
+    </div>
+  </div>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <h2 id="panelTitle">Dashboard</h2>
+    <div id="sdkStatus" class="status-badge">
+      <span class="dot"></span>
+      Initializing...
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="panel-dashboard" class="panel active">
+      <div class="card">
+        <h3>Zoho CRM Widget SDK v1.5 &mdash; Interactive Tester</h3>
+        <p class="desc">
+          This widget provides a comprehensive UI to test all Zoho CRM JS SDK methods including
+          ZRC (Zoho Remote Call), ZOHO.CRM.API, META, CONFIG, UI, CONNECTION, HTTP, and FUNCTIONS.
+          Navigate using the sidebar to explore each section.
+        </p>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 16px;">
+        <div class="quick-card" onclick="switchPanel('events')">
+          <div class="qc-icon">&#128225;</div>
+          <div class="qc-title">Events &amp; Init</div>
+          <div class="qc-desc">PageLoad, Dial, DialerActive</div>
+        </div>
+        <div class="quick-card" onclick="switchPanel('zrc')">
+          <div class="qc-icon">&#128279;</div>
+          <div class="qc-title">ZRC Methods</div>
+          <div class="qc-desc">GET, POST, PUT, DELETE, PATCH</div>
+        </div>
+        <div class="quick-card" onclick="switchPanel('api-records')">
+          <div class="qc-icon">&#128203;</div>
+          <div class="qc-title">Records CRUD</div>
+          <div class="qc-desc">Get, Insert, Update, Delete, Upsert</div>
+        </div>
+        <div class="quick-card" onclick="switchPanel('api-search')">
+          <div class="qc-icon">&#128269;</div>
+          <div class="qc-title">Search &amp; COQL</div>
+          <div class="qc-desc">Search by email, phone, word, criteria</div>
+        </div>
+        <div class="quick-card" onclick="switchPanel('meta')">
+          <div class="qc-icon">&#128230;</div>
+          <div class="qc-title">Metadata</div>
+          <div class="qc-desc">Modules, Fields, Layouts</div>
+        </div>
+        <div class="quick-card" onclick="switchPanel('ui')">
+          <div class="qc-icon">&#128444;&#65039;</div>
+          <div class="qc-title">UI Actions</div>
+          <div class="qc-desc">Resize, Record, Popup, Dialer</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>PageLoad Data (auto-captured)</h3>
+        <div class="output-box" id="pageLoadData"></div>
+      </div>
+    </div>
+
+    <!-- ===== EVENTS & INIT ===== -->
+    <div id="panel-events" class="panel">
+      <div class="card">
+        <h3>SDK Initialization</h3>
+        <p class="desc">The SDK is initialized on page load. Events are registered before calling <code>ZOHO.embeddedApp.init()</code>.</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="reinitSDK()">Re-Initialize SDK</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Init Status</span></div>
+          <div class="output-box" id="initOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Event Log</h3>
+        <p class="desc">All captured events from PageLoad, Dial, DialerActive, Notify, NotifyAndWait, ContextUpdate are logged here in real time.</p>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn btn-sm btn-outline" onclick="clearEventLog()">Clear Log</button>
+        </div>
+        <div class="event-log" id="eventLog">
+          <div class="event-item" style="color: var(--text-light); font-style: italic;">Waiting for events...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ZRC METHODS ===== -->
+    <div id="panel-zrc" class="panel">
+      <div class="card">
+        <h3>ZRC &mdash; Zoho Remote Call</h3>
+        <p class="desc">
+          ZRC provides a simplified HTTP client for making requests to Zoho CRM APIs and external APIs via connections.
+          Use relative paths like <code>/crm/v8/Leads</code> for CRM APIs, or absolute URLs for connection-based requests.
+        </p>
+      </div>
+
+      <!-- ZRC GET -->
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> zrc.get(path, requestConfig)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcGetPath" placeholder="/crm/v8/Leads" value="/crm/v8/Leads">
+          </div>
+          <div class="form-group">
+            <label>Params (JSON, optional)</label>
+            <input type="text" id="zrcGetParams" placeholder='{"fields":"Last_Name,First_Name"}'>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="zrcGet()">Send GET</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcGetOutput')">Copy</button></div>
+          <div class="output-box" id="zrcGetOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC POST -->
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> zrc.post(path, body, requestConfig)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcPostPath" placeholder="/crm/v8/Leads" value="/crm/v8/Leads">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Body (JSON)</label>
+          <textarea id="zrcPostBody" placeholder='{"data": [{"Last_Name": "Doe", "Company": "Zylker"}]}'>{
+  "data": [{"Last_Name": "Doe", "Company": "Zylker"}]
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="zrcPost()">Send POST</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcPostOutput')">Copy</button></div>
+          <div class="output-box" id="zrcPostOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC PUT -->
+      <div class="card">
+        <h3><span class="tag tag-put">PUT</span> zrc.put(path, body, requestConfig)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcPutPath" placeholder="/crm/v8/Leads/RECORD_ID">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Body (JSON)</label>
+          <textarea id="zrcPutBody" placeholder='{"data": [{"Last_Name": "Updated Name"}]}'>{
+  "data": [{"Last_Name": "Updated Name"}]
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="zrcPut()">Send PUT</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcPutOutput')">Copy</button></div>
+          <div class="output-box" id="zrcPutOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC PATCH -->
+      <div class="card">
+        <h3><span class="tag tag-patch">PATCH</span> zrc.patch(path, body, requestConfig)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcPatchPath" placeholder="/crm/v8/settings/fields/FIELD_ID?module=Leads">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Body (JSON)</label>
+          <textarea id="zrcPatchBody" placeholder='{"fields": [...]}'></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="zrcPatch()">Send PATCH</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcPatchOutput')">Copy</button></div>
+          <div class="output-box" id="zrcPatchOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC DELETE -->
+      <div class="card">
+        <h3><span class="tag tag-delete">DELETE</span> zrc.delete(path, requestConfig)</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcDeletePath" placeholder="/crm/v8/Leads/RECORD_ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="zrcDelete()">Send DELETE</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcDeleteOutput')">Copy</button></div>
+          <div class="output-box" id="zrcDeleteOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC HEAD / OPTIONS / REQUEST -->
+      <div class="card">
+        <h3>Other ZRC Methods</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Path / URL</label>
+            <input type="text" id="zrcOtherPath" placeholder="https://someexamplewebsite.to/test">
+          </div>
+          <div class="form-group">
+            <label>Method</label>
+            <select id="zrcOtherMethod">
+              <option value="head">HEAD</option>
+              <option value="options">OPTIONS</option>
+              <option value="request">REQUEST (Custom)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Request Config (JSON, for request only)</label>
+          <textarea id="zrcOtherConfig" placeholder='{"method": "GET", "path": "...", "headers": {}}'></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="zrcOther()">Execute</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcOtherOutput')">Copy</button></div>
+          <div class="output-box" id="zrcOtherOutput"></div>
+        </div>
+      </div>
+
+      <!-- ZRC createInstance -->
+      <div class="card">
+        <h3>zrc.createInstance(requestConfig)</h3>
+        <p class="desc">Create a reusable ZRC instance with default config (baseUrl, connection, headers).</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Base URL</label>
+            <input type="text" id="zrcInstBaseUrl" placeholder="https://api.myservice.com">
+          </div>
+          <div class="form-group">
+            <label>Connection Name (optional)</label>
+            <input type="text" id="zrcInstConn" placeholder="connection_link_name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Headers (JSON, optional)</label>
+          <input type="text" id="zrcInstHeaders" placeholder='{"Authorization": "Bearer TOKEN"}'>
+        </div>
+        <div class="form-row" style="margin-top: 10px;">
+          <div class="form-group">
+            <label>Instance Endpoint</label>
+            <input type="text" id="zrcInstEndpoint" placeholder="/users/">
+          </div>
+          <div class="form-group">
+            <label>Method</label>
+            <select id="zrcInstMethod">
+              <option value="get">GET</option>
+              <option value="post">POST</option>
+              <option value="put">PUT</option>
+              <option value="delete">DELETE</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Body (JSON, for POST/PUT)</label>
+          <textarea id="zrcInstBody" placeholder='{"users": [{"first_name": "Rahul"}]}'></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="zrcInstance()">Create &amp; Execute</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('zrcInstOutput')">Copy</button></div>
+          <div class="output-box" id="zrcInstOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RECORDS CRUD ===== -->
+    <div id="panel-api-records" class="panel">
+      <!-- getAllRecords -->
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getAllRecords</h3>
+        <p class="desc">Get list of all records in a module.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="allRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Sort Order</label>
+            <select id="allRecSort">
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Page</label>
+            <input type="number" id="allRecPage" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Per Page</label>
+            <input type="number" id="allRecPerPage" value="10" min="1" max="200">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getAllRecords()">Fetch Records</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('allRecOutput')">Copy</button></div>
+          <div class="output-box" id="allRecOutput"></div>
+        </div>
+      </div>
+
+      <!-- getRecord -->
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getRecord</h3>
+        <p class="desc">Get details of a specific record.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="getRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="getRecId" placeholder="Enter Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getRecord()">Get Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('getRecOutput')">Copy</button></div>
+          <div class="output-box" id="getRecOutput"></div>
+        </div>
+      </div>
+
+      <!-- insertRecord -->
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> insertRecord</h3>
+        <p class="desc">Insert a new record into a module.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="insRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Trigger</label>
+            <select id="insRecTrigger" multiple>
+              <option value="workflow">Workflow</option>
+              <option value="approval">Approval</option>
+              <option value="blueprint">Blueprint</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>API Data (JSON)</label>
+          <textarea id="insRecData" placeholder='{"Company":"Zylker","Last_Name":"Peterson"}'>{
+  "Company": "Zylker",
+  "Last_Name": "Peterson"
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="insertRecord()">Insert Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('insRecOutput')">Copy</button></div>
+          <div class="output-box" id="insRecOutput"></div>
+        </div>
+      </div>
+
+      <!-- updateRecord -->
+      <div class="card">
+        <h3><span class="tag tag-put">PUT</span> updateRecord</h3>
+        <p class="desc">Update an existing record.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="updRecModule" value="Leads">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>API Data (JSON, must include "id")</label>
+          <textarea id="updRecData" placeholder='{"id":"RECORD_ID","Company":"Updated Corp","Last_Name":"Smith"}'>{
+  "id": "",
+  "Company": "Updated Corp",
+  "Last_Name": "Smith"
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="updateRecord()">Update Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('updRecOutput')">Copy</button></div>
+          <div class="output-box" id="updRecOutput"></div>
+        </div>
+      </div>
+
+      <!-- upsertRecord -->
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> upsertRecord</h3>
+        <p class="desc">Insert or update matching existing record (duplicate check).</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="upsRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Duplicate Check Fields (comma-sep)</label>
+            <input type="text" id="upsRecDupFields" placeholder="Email,Mobile" value="Email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>API Data (JSON Array)</label>
+          <textarea id="upsRecData">[{
+  "Company": "Zoho",
+  "Last_Name": "Zylker",
+  "Email": "zylker@gmail.com"
+}]</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="upsertRecord()">Upsert Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('upsRecOutput')">Copy</button></div>
+          <div class="output-box" id="upsRecOutput"></div>
+        </div>
+      </div>
+
+      <!-- deleteRecord -->
+      <div class="card">
+        <h3><span class="tag tag-delete">DELETE</span> deleteRecord</h3>
+        <p class="desc">Delete a record from a module.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="delRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="delRecId" placeholder="Enter Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="deleteRecord()">Delete Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('delRecOutput')">Copy</button></div>
+          <div class="output-box" id="delRecOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SEARCH & COQL ===== -->
+    <div id="panel-api-search" class="panel">
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> searchRecord</h3>
+        <p class="desc">Search records by email, phone, word, or criteria.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="searchModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Search Type</label>
+            <select id="searchType">
+              <option value="word">Word</option>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="criteria">Criteria</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Query</label>
+            <input type="text" id="searchQuery" placeholder="e.g. Zoho or (Company:equals:Zoho)">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Page</label>
+            <input type="number" id="searchPage" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>Per Page</label>
+            <input type="number" id="searchPerPage" value="10" min="1" max="200">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="searchRecord()">Search</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('searchOutput')">Copy</button></div>
+          <div class="output-box" id="searchOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> COQL Query</h3>
+        <p class="desc">Get records using COQL (CRM Object Query Language).</p>
+        <div class="form-group">
+          <label>Select Query</label>
+          <textarea id="coqlQuery" placeholder="select Last_Name, First_Name from Contacts where Last_Name = 'Boyle' limit 5">select Last_Name, First_Name, Full_Name from Leads where Last_Name is not null limit 5</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="coqlQuery()">Execute COQL</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('coqlOutput')">Copy</button></div>
+          <div class="output-box" id="coqlOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RELATED RECORDS ===== -->
+    <div id="panel-api-related" class="panel">
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getRelatedRecords</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="relModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="relRecId" placeholder="Record ID">
+          </div>
+          <div class="form-group">
+            <label>Related List</label>
+            <input type="text" id="relList" value="Notes" placeholder="Notes, Campaigns, etc.">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getRelatedRecords()">Get Related Records</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('relOutput')">Copy</button></div>
+          <div class="output-box" id="relOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-put">PUT</span> updateRelatedRecords</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="updRelModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="updRelRecId" placeholder="Record ID">
+          </div>
+          <div class="form-group">
+            <label>Related List</label>
+            <input type="text" id="updRelList" value="Campaigns">
+          </div>
+          <div class="form-group">
+            <label>Related Record ID</label>
+            <input type="text" id="updRelRecordId" placeholder="Related Record ID">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>API Data (JSON)</label>
+          <textarea id="updRelData">{"Description": "Updated description"}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="updateRelatedRecords()">Update Related</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('updRelOutput')">Copy</button></div>
+          <div class="output-box" id="updRelOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-delete">DELETE</span> delinkRelatedRecord</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="delRelModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="delRelRecId" placeholder="Record ID">
+          </div>
+          <div class="form-group">
+            <label>Related List</label>
+            <input type="text" id="delRelList" value="Campaigns">
+          </div>
+          <div class="form-group">
+            <label>Related Record ID</label>
+            <input type="text" id="delRelRecordId" placeholder="Related Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="delinkRelatedRecord()">Delink</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('delRelOutput')">Copy</button></div>
+          <div class="output-box" id="delRelOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NOTES & FILES ===== -->
+    <div id="panel-api-notes" class="panel">
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> addNotes</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="noteModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="noteRecId" placeholder="Record ID">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="noteTitle" value="Test Note">
+          </div>
+          <div class="form-group">
+            <label>Content</label>
+            <input type="text" id="noteContent" value="This is a test note from Widget SDK.">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="addNotes()">Add Note</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('noteOutput')">Copy</button></div>
+          <div class="output-box" id="noteOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> attachFile</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="attachModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="attachRecId" placeholder="Record ID">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>File</label>
+          <input type="file" id="attachFileInput">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="attachFile()">Attach File</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('attachOutput')">Copy</button></div>
+          <div class="output-box" id="attachOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-post">POST</span> uploadFile</h3>
+        <div class="form-group">
+          <label>File</label>
+          <input type="file" id="uploadFileInput">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="uploadFile()">Upload File</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('uploadOutput')">Copy</button></div>
+          <div class="output-box" id="uploadOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getFile</h3>
+        <div class="form-group">
+          <label>File ID</label>
+          <input type="text" id="getFileId" placeholder="Enter file ID">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getFile()">Get File</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('getFileOutput')">Copy</button></div>
+          <div class="output-box" id="getFileOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== USERS & PROFILES ===== -->
+    <div id="panel-api-users" class="panel">
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getAllUsers</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="usersType">
+              <option value="AllUsers">AllUsers</option>
+              <option value="ActiveUsers">ActiveUsers</option>
+              <option value="DeactiveUsers">DeactiveUsers</option>
+              <option value="ConfirmedUsers">ConfirmedUsers</option>
+              <option value="NotConfirmedUsers">NotConfirmedUsers</option>
+              <option value="DeletedUsers">DeletedUsers</option>
+              <option value="ActiveConfirmedUsers">ActiveConfirmedUsers</option>
+              <option value="AdminUsers">AdminUsers</option>
+              <option value="ActiveConfirmedAdmins">ActiveConfirmedAdmins</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getAllUsers()">Get Users</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('usersOutput')">Copy</button></div>
+          <div class="output-box" id="usersOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-get">GET</span> getUser</h3>
+        <div class="form-group">
+          <label>User ID</label>
+          <input type="text" id="userId" placeholder="Enter User ID">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getUser()">Get User</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('userOutput')">Copy</button></div>
+          <div class="output-box" id="userOutput"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3><span class="tag tag-get">GET</span> getAllProfiles</h3>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getAllProfiles()">Get All Profiles</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('profilesOutput')">Copy</button></div>
+            <div class="output-box" id="profilesOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3><span class="tag tag-get">GET</span> getProfile</h3>
+          <div class="form-group">
+            <label>Profile ID</label>
+            <input type="text" id="profileId" placeholder="Profile ID">
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getProfile()">Get Profile</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('profileOutput')">Copy</button></div>
+            <div class="output-box" id="profileOutput"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tag tag-put">PUT</span> updateProfile</h3>
+        <div class="form-group">
+          <label>Profile ID</label>
+          <input type="text" id="updProfileId" placeholder="Profile ID">
+        </div>
+        <div class="form-group">
+          <label>Permission Data (JSON)</label>
+          <textarea id="updProfileData">{"profiles": [{"permissions_details": [{"id": "", "enabled": true}]}]}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="updateProfile()">Update Profile</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('updProfileOutput')">Copy</button></div>
+          <div class="output-box" id="updProfileOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== APPROVALS & BLUEPRINT ===== -->
+    <div id="panel-api-approvals" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3>getApprovalRecords</h3>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="approvalType">
+              <option value="">Default (awaiting)</option>
+              <option value="awaiting">Awaiting</option>
+              <option value="others_awaiting">Others Awaiting</option>
+            </select>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getApprovalRecords()">Get Approvals</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="approvalOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>getApprovalsHistory</h3>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getApprovalsHistory()">Get History</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="approvalHistOutput"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>getApprovalById</h3>
+        <div class="form-group">
+          <label>Approval ID</label>
+          <input type="text" id="approvalById" placeholder="Approval ID">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getApprovalById()">Get Approval</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="approvalByIdOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>approveRecord</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="appRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="appRecId" placeholder="Record ID">
+          </div>
+          <div class="form-group">
+            <label>Action Type</label>
+            <select id="appRecAction">
+              <option value="approve">Approve</option>
+              <option value="reject">Reject</option>
+              <option value="delegate">Delegate</option>
+              <option value="resubmit">Resubmit</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Comments (optional)</label>
+            <input type="text" id="appRecComments" placeholder="Comments">
+          </div>
+          <div class="form-group">
+            <label>User (for delegate, optional)</label>
+            <input type="text" id="appRecUser" placeholder="User ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="approveRecord()">Execute</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="appRecOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>getAllActions</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="actionsModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="actionsRecId" placeholder="Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getAllActions()">Get Actions</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="actionsOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>getBluePrint / updateBluePrint</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="bpModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID</label>
+            <input type="text" id="bpRecId" placeholder="Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getBluePrint()">Get BluePrint</button>
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+          <label>Blueprint Data (JSON, for update)</label>
+          <textarea id="bpData" placeholder='{"blueprint":[{"transition_id":"...","data":{}}]}'></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-warning" onclick="updateBluePrint()">Update BluePrint</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="bpOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ORG VARIABLES ===== -->
+    <div id="panel-api-org" class="panel">
+      <div class="card">
+        <h3>getOrgVariable</h3>
+        <p class="desc">Get organization variable by namespace or multiple API keys.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Variable Namespace (single)</label>
+            <input type="text" id="orgVarNs" placeholder="variableNamespace">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>OR: API Keys (comma-separated)</label>
+          <input type="text" id="orgVarKeys" placeholder="key1,key2,key3">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getOrgVariable()">Get Variable</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="orgVarOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== METADATA ===== -->
+    <div id="panel-meta" class="panel">
+      <div class="card">
+        <h3>getModules</h3>
+        <p class="desc">Get all modules in the CRM org.</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getModules()">Get Modules</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('modulesOutput')">Copy</button></div>
+          <div class="output-box" id="modulesOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>getFields</h3>
+        <div class="form-group">
+          <label>Module</label>
+          <input type="text" id="fieldsModule" value="Leads">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getFields()">Get Fields</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('fieldsOutput')">Copy</button></div>
+          <div class="output-box" id="fieldsOutput"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>getLayouts</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Module</label>
+              <input type="text" id="layoutsModule" value="Leads">
+            </div>
+            <div class="form-group">
+              <label>Layout ID (optional)</label>
+              <input type="text" id="layoutsId" placeholder="Layout ID">
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getLayouts()">Get Layouts</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="layoutsOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>getCustomViews</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Module</label>
+              <input type="text" id="cvModule" value="Leads">
+            </div>
+            <div class="form-group">
+              <label>View ID (optional)</label>
+              <input type="text" id="cvId" placeholder="Custom View ID">
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getCustomViews()">Get Views</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="cvOutput"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>getAssignmentRules</h3>
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="arModule" value="Leads">
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getAssignmentRules()">Get Rules</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="arOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>getRelatedList</h3>
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="rlModule" value="Leads">
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getRelatedList()">Get Related Lists</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="rlOutput"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONFIG ===== -->
+    <div id="panel-config" class="panel">
+      <div class="grid-2">
+        <div class="card">
+          <h3>getCurrentUser</h3>
+          <p class="desc">Get current logged-in user info.</p>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getCurrentUser()">Get Current User</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="curUserOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>getOrgInfo</h3>
+          <p class="desc">Get organization info.</p>
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="getOrgInfo()">Get Org Info</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="orgInfoOutput"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>getUserPreference</h3>
+        <p class="desc">Get current user's preference (e.g., dark mode).</p>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="getUserPreference()">Get Preference</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="userPrefOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== UI ===== -->
+    <div id="panel-ui" class="panel">
+      <div class="card">
+        <h3>UI.Resize</h3>
+        <p class="desc">Resize the widget window.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Width (px)</label>
+            <input type="number" id="uiWidth" value="800">
+          </div>
+          <div class="form-group">
+            <label>Height (px)</label>
+            <input type="number" id="uiHeight" value="600">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="uiResize()">Resize Widget</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="uiResizeOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>UI.Record</h3>
+        <p class="desc">Open, create, edit, or populate CRM records.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Module</label>
+            <input type="text" id="uiRecModule" value="Leads">
+          </div>
+          <div class="form-group">
+            <label>Record ID (for open/edit)</label>
+            <input type="text" id="uiRecId" placeholder="Record ID">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="uiRecordOpen()">Open Record</button>
+          <button class="btn btn-success" onclick="uiRecordCreate()">Create Record</button>
+          <button class="btn btn-warning" onclick="uiRecordEdit()">Edit Record</button>
+        </div>
+        <div class="form-group" style="margin-top:12px;">
+          <label>Populate Data (JSON)</label>
+          <textarea id="uiRecPopData" placeholder='{"Phone":"123456","Description":"Test"}'>{
+  "Phone": "123456789",
+  "Description": "Populated from widget"
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="uiRecordPopulate()">Populate Record</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="uiRecOutput"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>UI.Popup</h3>
+          <div class="btn-group">
+            <button class="btn btn-danger btn-sm" onclick="uiPopupClose()">Close Popup</button>
+            <button class="btn btn-warning btn-sm" onclick="uiPopupCloseReload()">Close &amp; Reload</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="uiPopupOutput"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>UI.Dialer</h3>
+          <div class="btn-group">
+            <button class="btn btn-primary btn-sm" onclick="uiDialerMax()">Maximize</button>
+            <button class="btn btn-outline btn-sm" onclick="uiDialerMin()">Minimize</button>
+            <button class="btn btn-warning btn-sm" onclick="uiDialerNotify()">Notify</button>
+          </div>
+          <div class="output-section">
+            <div class="output-header"><span>Response</span></div>
+            <div class="output-box" id="uiDialerOutput"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>UI.Widget.open</h3>
+        <p class="desc">Open a WebTab Widget with custom onLoad data.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Entity (WebTab name)</label>
+            <input type="text" id="uiWidgetEntity" placeholder="WebTab1_Widget">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Message (JSON)</label>
+          <textarea id="uiWidgetMsg">{
+  "arg1": "Argument 1",
+  "arg2": "Argument 2"
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="uiWidgetOpen()">Open Widget</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span></div>
+          <div class="output-box" id="uiWidgetOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONNECTION ===== -->
+    <div id="panel-connection" class="panel">
+      <div class="card">
+        <h3>CONNECTION.invoke</h3>
+        <p class="desc">Invoke an external connection configured in Zoho CRM.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Connection Name</label>
+            <input type="text" id="connName" placeholder="e.g. mailchimp4">
+          </div>
+          <div class="form-group">
+            <label>Method</label>
+            <select id="connMethod">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>URL</label>
+          <input type="text" id="connUrl" placeholder="https://api.example.com/endpoint">
+        </div>
+        <div class="form-group">
+          <label>Parameters (JSON)</label>
+          <textarea id="connParams" placeholder='{"param1":"value1"}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>Headers (JSON)</label>
+          <textarea id="connHeaders" placeholder='{"header1":"value1"}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>Param Type (1=params, 2=payload)</label>
+          <select id="connParamType">
+            <option value="1">1 - Params</option>
+            <option value="2">2 - Payload</option>
+          </select>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="invokeConnection()">Invoke Connection</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('connOutput')">Copy</button></div>
+          <div class="output-box" id="connOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CONNECTOR ===== -->
+    <div id="panel-connector" class="panel">
+      <div class="card">
+        <h3>ZOHO.CRM.CONNECTOR</h3>
+        <p class="desc">
+          Connector APIs allow you to authorize and invoke pre-configured Connectors from the widget.
+          Use <code>authorize</code> to prompt the connector auth window, and <code>invokeAPI</code> to call a connector endpoint.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>authorize(nameSpace)</h3>
+        <p class="desc">Prompts the Connector authorization window. Returns a promise resolved with <code>true</code> on success.</p>
+        <div class="form-group">
+          <label>Connector NameSpace</label>
+          <input type="text" id="connectorAuthNs" placeholder="e.g. zoho.authorize">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="connectorAuthorize()">Authorize</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('connectorAuthOutput')">Copy</button></div>
+          <div class="output-box" id="connectorAuthOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>invokeAPI(nameSpace, data)</h3>
+        <p class="desc">Invoke a Connector API. Pass dynamic data via the VARIABLES key, or use CONTENT_TYPE / PARTS / FILE for multipart uploads.</p>
+        <div class="form-group">
+          <label>Connector API NameSpace</label>
+          <input type="text" id="connectorApiNs" placeholder="e.g. MailChimp.sendSubscription">
+        </div>
+        <div class="form-group">
+          <label>Data / Variables (JSON)</label>
+          <textarea id="connectorApiData" placeholder='{"apikey":"***","First_Name":"Naresh","Last_Name":"Babu","email":"naresh@zylker.com"}'>{"apikey": "", "First_Name": "Naresh", "Last_Name": "Babu", "email": "naresh@zylker.com"}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="connectorInvokeAPI()">Invoke API</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('connectorApiOutput')">Copy</button></div>
+          <div class="output-box" id="connectorApiOutput"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>invokeAPI &mdash; Multipart File Upload</h3>
+        <p class="desc">Upload a file through a Connector API using multipart content type.</p>
+        <div class="form-group">
+          <label>Connector API NameSpace</label>
+          <input type="text" id="connectorFileNs" placeholder="e.g. ex10.testconnector.uplaodfile">
+        </div>
+        <div class="form-group">
+          <label>VARIABLES (JSON, optional &mdash; e.g. path placeholders)</label>
+          <textarea id="connectorFileVars" placeholder='{"pathFileName":"/Zoho CRM/myFile/test.pdf"}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>File</label>
+          <input type="file" id="connectorFileInput">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="connectorInvokeFileUpload()">Upload via Connector</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('connectorFileOutput')">Copy</button></div>
+          <div class="output-box" id="connectorFileOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HTTP ===== -->
+    <div id="panel-http" class="panel">
+      <div class="card">
+        <h3>ZOHO.CRM.HTTP</h3>
+        <p class="desc">Make direct HTTP requests (GET, POST, PUT, PATCH, DELETE) with full control over URL, headers, params, and body.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Method</label>
+            <select id="httpMethod">
+              <option value="get">GET</option>
+              <option value="post">POST</option>
+              <option value="put">PUT</option>
+              <option value="patch">PATCH</option>
+              <option value="delete">DELETE</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:3;">
+            <label>URL</label>
+            <input type="text" id="httpUrl" placeholder="https://crm.zoho.com/crm/v2/Leads">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Headers (JSON)</label>
+          <textarea id="httpHeaders" placeholder='{"Authorization":"Bearer ..."}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>Params (JSON)</label>
+          <textarea id="httpParams" placeholder='{"scope":"crmapi"}'></textarea>
+        </div>
+        <div class="form-group">
+          <label>Body (JSON, for POST/PUT/PATCH/DELETE)</label>
+          <textarea id="httpBody" placeholder='{"data":[...]}'></textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="httpRequest()">Send Request</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('httpOutput')">Copy</button></div>
+          <div class="output-box" id="httpOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== FUNCTIONS ===== -->
+    <div id="panel-functions" class="panel">
+      <div class="card">
+        <h3>FUNCTIONS.execute</h3>
+        <p class="desc">Execute a custom Deluge function from the widget.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Function Name</label>
+            <input type="text" id="funcName" placeholder="e.g. custom_function4">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Arguments (JSON)</label>
+          <textarea id="funcArgs" placeholder='{"mailid":"user@example.com"}'>{
+  "mailid": "user@example.com"
+}</textarea>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="executeFunction()">Execute Function</button>
+        </div>
+        <div class="output-section">
+          <div class="output-header"><span>Response</span><button class="btn-copy" onclick="copyOutput('funcOutput')">Copy</button></div>
+          <div class="output-box" id="funcOutput"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ============================================================
+  //  GLOBALS & HELPERS
+  // ============================================================
+  var pageLoadInfo = null;
+
+  function fmt(data) {
+    try { return JSON.stringify(data, null, 2); }
+    catch(e) { return String(data); }
+  }
+
+  function out(id, data) {
+    document.getElementById(id).textContent = fmt(data);
+  }
+
+  function outErr(id, err) {
+    document.getElementById(id).textContent = "ERROR:\n" + fmt(err);
+  }
+
+  function safeJSON(str) {
+    if (!str || !str.trim()) return null;
+    try { return JSON.parse(str); } catch(e) { alert("Invalid JSON: " + e.message); return null; }
+  }
+
+  function copyOutput(id) {
+    var text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text);
+  }
+
+  function addEvent(name, data) {
+    var log = document.getElementById("eventLog");
+    if (log.querySelector(".event-item[style]")) log.innerHTML = "";
+    var now = new Date().toLocaleTimeString();
+    var item = document.createElement("div");
+    item.className = "event-item";
+    item.innerHTML =
+      '<span class="event-time">' + now + '</span>' +
+      '<span class="event-name">' + name + '</span>' +
+      '<span class="event-data">' + fmt(data).substring(0, 300) + '</span>';
+    log.prepend(item);
+  }
+
+  function clearEventLog() {
+    document.getElementById("eventLog").innerHTML =
+      '<div class="event-item" style="color: var(--text-light); font-style: italic;">Waiting for events...</div>';
+  }
+
+  // ============================================================
+  //  SIDEBAR NAVIGATION
+  // ============================================================
+  var panelTitles = {
+    "dashboard": "Dashboard",
+    "events": "Events & Init",
+    "zrc": "ZRC Methods",
+    "api-records": "Records CRUD",
+    "api-search": "Search & COQL",
+    "api-related": "Related Records",
+    "api-notes": "Notes & Files",
+    "api-users": "Users & Profiles",
+    "api-approvals": "Approvals & Blueprint",
+    "api-org": "Org Variables",
+    "meta": "Metadata",
+    "config": "Config",
+    "ui": "UI Actions",
+    "connection": "Connections",
+    "connector": "Connector",
+    "http": "HTTP Requests",
+    "functions": "Functions"
+  };
+
+  function switchPanel(name) {
+    document.querySelectorAll(".panel").forEach(function(p) { p.classList.remove("active"); });
+    document.querySelectorAll(".sidebar-item").forEach(function(s) { s.classList.remove("active"); });
+    var panel = document.getElementById("panel-" + name);
+    if (panel) panel.classList.add("active");
+    var sideItem = document.querySelector('.sidebar-item[data-panel="' + name + '"]');
+    if (sideItem) sideItem.classList.add("active");
+    document.getElementById("panelTitle").textContent = panelTitles[name] || name;
+  }
+
+  document.querySelectorAll(".sidebar-item").forEach(function(item) {
+    item.addEventListener("click", function() {
+      switchPanel(this.getAttribute("data-panel"));
+    });
+  });
+
+  // ============================================================
+  //  SDK INITIALIZATION
+  // ============================================================
+  function initSDK() {
+    try {
+      ZOHO.embeddedApp.on("PageLoad", function(data) {
+        pageLoadInfo = data;
+        out("pageLoadData", data);
+        addEvent("PageLoad", data);
+        updateStatus(true);
+      });
+
+      ZOHO.embeddedApp.on("DialerActive", function() {
+        addEvent("DialerActive", { message: "Dialer Activated" });
+      });
+
+      ZOHO.embeddedApp.on("Dial", function(data) {
+        addEvent("Dial", data);
+      });
+
+      ZOHO.embeddedApp.on("Notify", function(data) {
+        addEvent("Notify", data);
+      });
+
+      ZOHO.embeddedApp.on("NotifyAndWait", function(data) {
+        addEvent("NotifyAndWait", data);
+      });
+
+      ZOHO.embeddedApp.on("ContextUpdate", function(data) {
+        addEvent("ContextUpdate", data);
+      });
+
+      ZOHO.embeddedApp.init().then(function() {
+        updateStatus(true);
+        out("initOutput", { status: "SUCCESS", message: "SDK initialized successfully", zrc_available: typeof zrc !== "undefined" && zrc !== null });
+      }).catch(function(err) {
+        updateStatus(false);
+        outErr("initOutput", err);
+      });
+    } catch(e) {
+      updateStatus(false);
+      out("initOutput", { status: "ERROR", error: e.message });
+    }
+  }
+
+  function reinitSDK() {
+    out("initOutput", { status: "Re-initializing..." });
+    initSDK();
+  }
+
+  function updateStatus(ok) {
+    var badge = document.getElementById("sdkStatus");
+    if (ok) {
+      badge.className = "status-badge";
+      badge.innerHTML = '<span class="dot"></span> SDK Connected';
+    } else {
+      badge.className = "status-badge error";
+      badge.innerHTML = '<span class="dot"></span> SDK Error';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    initSDK();
+  });
+
+  // ============================================================
+  //  ZRC METHODS
+  // ============================================================
+  async function zrcGet() {
+    try {
+      var path = document.getElementById("zrcGetPath").value;
+      var paramsStr = document.getElementById("zrcGetParams").value;
+      var config = {};
+      if (paramsStr) { var p = safeJSON(paramsStr); if (p) config.params = p; }
+      var res = await zrc.get(path, config);
+      out("zrcGetOutput", res);
+    } catch(e) { outErr("zrcGetOutput", e.message || e); }
+  }
+
+  async function zrcPost() {
+    try {
+      var path = document.getElementById("zrcPostPath").value;
+      var body = safeJSON(document.getElementById("zrcPostBody").value);
+      if (!body) return;
+      var res = await zrc.post(path, body);
+      out("zrcPostOutput", res);
+    } catch(e) { outErr("zrcPostOutput", e.message || e); }
+  }
+
+  async function zrcPut() {
+    try {
+      var path = document.getElementById("zrcPutPath").value;
+      var body = safeJSON(document.getElementById("zrcPutBody").value);
+      if (!body) return;
+      var res = await zrc.put(path, body);
+      out("zrcPutOutput", res);
+    } catch(e) { outErr("zrcPutOutput", e.message || e); }
+  }
+
+  async function zrcPatch() {
+    try {
+      var path = document.getElementById("zrcPatchPath").value;
+      var body = safeJSON(document.getElementById("zrcPatchBody").value);
+      if (!body) return;
+      var res = await zrc.patch(path, body);
+      out("zrcPatchOutput", res);
+    } catch(e) { outErr("zrcPatchOutput", e.message || e); }
+  }
+
+  async function zrcDelete() {
+    try {
+      var path = document.getElementById("zrcDeletePath").value;
+      var res = await zrc.delete(path);
+      out("zrcDeleteOutput", res);
+    } catch(e) { outErr("zrcDeleteOutput", e.message || e); }
+  }
+
+  async function zrcOther() {
+    try {
+      var path = document.getElementById("zrcOtherPath").value;
+      var method = document.getElementById("zrcOtherMethod").value;
+      var res;
+      if (method === "head") {
+        res = await zrc.head(path);
+      } else if (method === "options") {
+        res = await zrc.options(path);
+      } else {
+        var config = safeJSON(document.getElementById("zrcOtherConfig").value);
+        if (!config) config = { path: path };
+        res = await zrc.request(config);
+      }
+      out("zrcOtherOutput", res);
+    } catch(e) { outErr("zrcOtherOutput", e.message || e); }
+  }
+
+  async function zrcInstance() {
+    try {
+      var instConfig = {};
+      var baseUrl = document.getElementById("zrcInstBaseUrl").value;
+      var conn = document.getElementById("zrcInstConn").value;
+      var headers = safeJSON(document.getElementById("zrcInstHeaders").value);
+      if (baseUrl) instConfig.baseUrl = baseUrl;
+      if (conn) instConfig.connection = conn;
+      if (headers) instConfig.headers = headers;
+
+      var instance = zrc.createInstance(instConfig);
+      var method = document.getElementById("zrcInstMethod").value;
+      var endpoint = document.getElementById("zrcInstEndpoint").value;
+      var body = safeJSON(document.getElementById("zrcInstBody").value);
+      var res;
+      if (method === "get") res = await instance.get(endpoint);
+      else if (method === "post") res = await instance.post(endpoint, body);
+      else if (method === "put") res = await instance.put(endpoint, body);
+      else if (method === "delete") res = await instance.delete(endpoint);
+      out("zrcInstOutput", res);
+    } catch(e) { outErr("zrcInstOutput", e.message || e); }
+  }
+
+  // ============================================================
+  //  ZOHO.CRM.API - RECORDS
+  // ============================================================
+  function getAllRecords() {
+    ZOHO.CRM.API.getAllRecords({
+      Entity: document.getElementById("allRecModule").value,
+      sort_order: document.getElementById("allRecSort").value,
+      page: parseInt(document.getElementById("allRecPage").value),
+      per_page: parseInt(document.getElementById("allRecPerPage").value)
+    }).then(function(d) { out("allRecOutput", d); })
+      .catch(function(e) { outErr("allRecOutput", e); });
+  }
+
+  function getRecord() {
+    ZOHO.CRM.API.getRecord({
+      Entity: document.getElementById("getRecModule").value,
+      RecordID: document.getElementById("getRecId").value
+    }).then(function(d) { out("getRecOutput", d); })
+      .catch(function(e) { outErr("getRecOutput", e); });
+  }
+
+  function insertRecord() {
+    var data = safeJSON(document.getElementById("insRecData").value);
+    if (!data) return;
+    var sel = document.getElementById("insRecTrigger");
+    var triggers = Array.from(sel.selectedOptions).map(function(o) { return o.value; });
+    ZOHO.CRM.API.insertRecord({
+      Entity: document.getElementById("insRecModule").value,
+      APIData: data,
+      Trigger: triggers
+    }).then(function(d) { out("insRecOutput", d); })
+      .catch(function(e) { outErr("insRecOutput", e); });
+  }
+
+  function updateRecord() {
+    var data = safeJSON(document.getElementById("updRecData").value);
+    if (!data) return;
+    ZOHO.CRM.API.updateRecord({
+      Entity: document.getElementById("updRecModule").value,
+      APIData: data,
+      Trigger: ["workflow"]
+    }).then(function(d) { out("updRecOutput", d); })
+      .catch(function(e) { outErr("updRecOutput", e); });
+  }
+
+  function upsertRecord() {
+    var data = safeJSON(document.getElementById("upsRecData").value);
+    if (!data) return;
+    var dupFields = document.getElementById("upsRecDupFields").value.split(",").map(function(s) { return s.trim(); });
+    ZOHO.CRM.API.upsertRecord({
+      Entity: document.getElementById("upsRecModule").value,
+      APIData: data,
+      duplicate_check_fields: dupFields,
+      Trigger: ["workflow"]
+    }).then(function(d) { out("upsRecOutput", d); })
+      .catch(function(e) { outErr("upsRecOutput", e); });
+  }
+
+  function deleteRecord() {
+    if (!confirm("Are you sure you want to delete this record?")) return;
+    ZOHO.CRM.API.deleteRecord({
+      Entity: document.getElementById("delRecModule").value,
+      RecordID: document.getElementById("delRecId").value
+    }).then(function(d) { out("delRecOutput", d); })
+      .catch(function(e) { outErr("delRecOutput", e); });
+  }
+
+  // ============================================================
+  //  SEARCH & COQL
+  // ============================================================
+  function searchRecord() {
+    ZOHO.CRM.API.searchRecord({
+      Entity: document.getElementById("searchModule").value,
+      Type: document.getElementById("searchType").value,
+      Query: document.getElementById("searchQuery").value,
+      delay: false,
+      page: parseInt(document.getElementById("searchPage").value),
+      per_page: parseInt(document.getElementById("searchPerPage").value)
+    }).then(function(d) { out("searchOutput", d); })
+      .catch(function(e) { outErr("searchOutput", e); });
+  }
+
+  function coqlQuery() {
+    ZOHO.CRM.API.coql({
+      select_query: document.getElementById("coqlQuery").value
+    }).then(function(d) { out("coqlOutput", d); })
+      .catch(function(e) { outErr("coqlOutput", e); });
+  }
+
+  // ============================================================
+  //  RELATED RECORDS
+  // ============================================================
+  function getRelatedRecords() {
+    ZOHO.CRM.API.getRelatedRecords({
+      Entity: document.getElementById("relModule").value,
+      RecordID: document.getElementById("relRecId").value,
+      RelatedList: document.getElementById("relList").value,
+      page: 1, per_page: 200
+    }).then(function(d) { out("relOutput", d); })
+      .catch(function(e) { outErr("relOutput", e); });
+  }
+
+  function updateRelatedRecords() {
+    var data = safeJSON(document.getElementById("updRelData").value);
+    if (!data) return;
+    ZOHO.CRM.API.updateRelatedRecords({
+      Entity: document.getElementById("updRelModule").value,
+      RecordID: document.getElementById("updRelRecId").value,
+      RelatedList: document.getElementById("updRelList").value,
+      RelatedRecordID: document.getElementById("updRelRecordId").value,
+      APIData: data
+    }).then(function(d) { out("updRelOutput", d); })
+      .catch(function(e) { outErr("updRelOutput", e); });
+  }
+
+  function delinkRelatedRecord() {
+    ZOHO.CRM.API.delinkRelatedRecord({
+      Entity: document.getElementById("delRelModule").value,
+      RecordID: document.getElementById("delRelRecId").value,
+      RelatedList: document.getElementById("delRelList").value,
+      RelatedRecordID: document.getElementById("delRelRecordId").value
+    }).then(function(d) { out("delRelOutput", d); })
+      .catch(function(e) { outErr("delRelOutput", e); });
+  }
+
+  // ============================================================
+  //  NOTES & FILES
+  // ============================================================
+  function addNotes() {
+    ZOHO.CRM.API.addNotes({
+      Entity: document.getElementById("noteModule").value,
+      RecordID: document.getElementById("noteRecId").value,
+      Title: document.getElementById("noteTitle").value,
+      Content: document.getElementById("noteContent").value
+    }).then(function(d) { out("noteOutput", d); })
+      .catch(function(e) { outErr("noteOutput", e); });
+  }
+
+  function attachFile() {
+    var fileInput = document.getElementById("attachFileInput");
+    if (!fileInput.files.length) { alert("Please select a file"); return; }
+    var file = fileInput.files[0];
+    ZOHO.CRM.API.attachFile({
+      Entity: document.getElementById("attachModule").value,
+      RecordID: document.getElementById("attachRecId").value,
+      File: { Name: file.name, Content: file }
+    }).then(function(d) { out("attachOutput", d); })
+      .catch(function(e) { outErr("attachOutput", e); });
+  }
+
+  function uploadFile() {
+    var fileInput = document.getElementById("uploadFileInput");
+    if (!fileInput.files.length) { alert("Please select a file"); return; }
+    var file = fileInput.files[0];
+    ZOHO.CRM.API.uploadFile({
+      CONTENT_TYPE: "multipart",
+      PARTS: [{ headers: { "Content-Disposition": "file;" }, content: "__FILE__" }],
+      FILE: { fileParam: "content", file: file }
+    }).then(function(d) { out("uploadOutput", d); })
+      .catch(function(e) { outErr("uploadOutput", e); });
+  }
+
+  function getFile() {
+    ZOHO.CRM.API.getFile({ id: document.getElementById("getFileId").value })
+      .then(function(d) { out("getFileOutput", d); })
+      .catch(function(e) { outErr("getFileOutput", e); });
+  }
+
+  // ============================================================
+  //  USERS & PROFILES
+  // ============================================================
+  function getAllUsers() {
+    ZOHO.CRM.API.getAllUsers({ Type: document.getElementById("usersType").value })
+      .then(function(d) { out("usersOutput", d); })
+      .catch(function(e) { outErr("usersOutput", e); });
+  }
+
+  function getUser() {
+    ZOHO.CRM.API.getUser({ ID: document.getElementById("userId").value })
+      .then(function(d) { out("userOutput", d); })
+      .catch(function(e) { outErr("userOutput", e); });
+  }
+
+  function getAllProfiles() {
+    ZOHO.CRM.API.getAllProfiles()
+      .then(function(d) { out("profilesOutput", d); })
+      .catch(function(e) { outErr("profilesOutput", e); });
+  }
+
+  function getProfile() {
+    ZOHO.CRM.API.getProfile({ ID: document.getElementById("profileId").value })
+      .then(function(d) { out("profileOutput", d); })
+      .catch(function(e) { outErr("profileOutput", e); });
+  }
+
+  function updateProfile() {
+    var data = safeJSON(document.getElementById("updProfileData").value);
+    if (!data) return;
+    ZOHO.CRM.API.updateProfile({ ID: document.getElementById("updProfileId").value, APIData: data })
+      .then(function(d) { out("updProfileOutput", d); })
+      .catch(function(e) { outErr("updProfileOutput", e); });
+  }
+
+  // ============================================================
+  //  APPROVALS & ACTIONS & BLUEPRINT
+  // ============================================================
+  function getApprovalRecords() {
+    var type = document.getElementById("approvalType").value;
+    var config = type ? { type: type } : {};
+    ZOHO.CRM.API.getApprovalRecords(config)
+      .then(function(d) { out("approvalOutput", d); })
+      .catch(function(e) { outErr("approvalOutput", e); });
+  }
+
+  function getApprovalsHistory() {
+    ZOHO.CRM.API.getApprovalsHistory()
+      .then(function(d) { out("approvalHistOutput", d); })
+      .catch(function(e) { outErr("approvalHistOutput", e); });
+  }
+
+  function getApprovalById() {
+    ZOHO.CRM.API.getApprovalById({ id: document.getElementById("approvalById").value })
+      .then(function(d) { out("approvalByIdOutput", d); })
+      .catch(function(e) { outErr("approvalByIdOutput", e); });
+  }
+
+  function approveRecord() {
+    var config = {
+      Entity: document.getElementById("appRecModule").value,
+      RecordID: document.getElementById("appRecId").value,
+      actionType: document.getElementById("appRecAction").value
+    };
+    var comments = document.getElementById("appRecComments").value;
+    var user = document.getElementById("appRecUser").value;
+    if (comments) config.comments = comments;
+    if (user) config.user = user;
+    ZOHO.CRM.API.approveRecord(config)
+      .then(function(d) { out("appRecOutput", d); })
+      .catch(function(e) { outErr("appRecOutput", e); });
+  }
+
+  function getAllActions() {
+    ZOHO.CRM.API.getAllActions({
+      Entity: document.getElementById("actionsModule").value,
+      RecordID: document.getElementById("actionsRecId").value
+    }).then(function(d) { out("actionsOutput", d); })
+      .catch(function(e) { outErr("actionsOutput", e); });
+  }
+
+  function getBluePrint() {
+    ZOHO.CRM.API.getBluePrint({
+      Entity: document.getElementById("bpModule").value,
+      RecordID: document.getElementById("bpRecId").value
+    }).then(function(d) { out("bpOutput", d); })
+      .catch(function(e) { outErr("bpOutput", e); });
+  }
+
+  function updateBluePrint() {
+    var data = safeJSON(document.getElementById("bpData").value);
+    if (!data) return;
+    ZOHO.CRM.API.updateBluePrint({
+      Entity: document.getElementById("bpModule").value,
+      RecordID: document.getElementById("bpRecId").value,
+      BlueprintData: data
+    }).then(function(d) { out("bpOutput", d); })
+      .catch(function(e) { outErr("bpOutput", e); });
+  }
+
+  // ============================================================
+  //  ORG VARIABLES
+  // ============================================================
+  function getOrgVariable() {
+    var ns = document.getElementById("orgVarNs").value;
+    var keys = document.getElementById("orgVarKeys").value;
+    var arg = keys ? { apiKeys: keys.split(",").map(function(s) { return s.trim(); }) } : ns;
+    ZOHO.CRM.API.getOrgVariable(arg)
+      .then(function(d) { out("orgVarOutput", d); })
+      .catch(function(e) { outErr("orgVarOutput", e); });
+  }
+
+  // ============================================================
+  //  META
+  // ============================================================
+  function getModules() {
+    ZOHO.CRM.META.getModules()
+      .then(function(d) { out("modulesOutput", d); })
+      .catch(function(e) { outErr("modulesOutput", e); });
+  }
+
+  function getFields() {
+    ZOHO.CRM.META.getFields({ Entity: document.getElementById("fieldsModule").value })
+      .then(function(d) { out("fieldsOutput", d); })
+      .catch(function(e) { outErr("fieldsOutput", e); });
+  }
+
+  function getLayouts() {
+    var config = { Entity: document.getElementById("layoutsModule").value };
+    var id = document.getElementById("layoutsId").value;
+    if (id) config.Id = id;
+    ZOHO.CRM.META.getLayouts(config)
+      .then(function(d) { out("layoutsOutput", d); })
+      .catch(function(e) { outErr("layoutsOutput", e); });
+  }
+
+  function getCustomViews() {
+    var config = { Entity: document.getElementById("cvModule").value };
+    var id = document.getElementById("cvId").value;
+    if (id) config.Id = id;
+    ZOHO.CRM.META.getCustomViews(config)
+      .then(function(d) { out("cvOutput", d); })
+      .catch(function(e) { outErr("cvOutput", e); });
+  }
+
+  function getAssignmentRules() {
+    ZOHO.CRM.META.getAssignmentRules({ Entity: document.getElementById("arModule").value })
+      .then(function(d) { out("arOutput", d); })
+      .catch(function(e) { outErr("arOutput", e); });
+  }
+
+  function getRelatedList() {
+    ZOHO.CRM.META.getRelatedList({ Entity: document.getElementById("rlModule").value })
+      .then(function(d) { out("rlOutput", d); })
+      .catch(function(e) { outErr("rlOutput", e); });
+  }
+
+  // ============================================================
+  //  CONFIG
+  // ============================================================
+  function getCurrentUser() {
+    ZOHO.CRM.CONFIG.getCurrentUser()
+      .then(function(d) { out("curUserOutput", d); })
+      .catch(function(e) { outErr("curUserOutput", e); });
+  }
+
+  function getOrgInfo() {
+    ZOHO.CRM.CONFIG.getOrgInfo()
+      .then(function(d) { out("orgInfoOutput", d); })
+      .catch(function(e) { outErr("orgInfoOutput", e); });
+  }
+
+  function getUserPreference() {
+    ZOHO.CRM.CONFIG.getUserPreference()
+      .then(function(d) { out("userPrefOutput", d); })
+      .catch(function(e) { outErr("userPrefOutput", e); });
+  }
+
+  // ============================================================
+  //  UI
+  // ============================================================
+  function uiResize() {
+    ZOHO.CRM.UI.Resize({
+      height: document.getElementById("uiHeight").value,
+      width: document.getElementById("uiWidth").value
+    }).then(function(d) { out("uiResizeOutput", d); })
+      .catch(function(e) { outErr("uiResizeOutput", e); });
+  }
+
+  function uiRecordOpen() {
+    ZOHO.CRM.UI.Record.open({
+      Entity: document.getElementById("uiRecModule").value,
+      RecordID: document.getElementById("uiRecId").value
+    }).then(function(d) { out("uiRecOutput", d); })
+      .catch(function(e) { outErr("uiRecOutput", e); });
+  }
+
+  function uiRecordCreate() {
+    ZOHO.CRM.UI.Record.create({ Entity: document.getElementById("uiRecModule").value })
+      .then(function(d) { out("uiRecOutput", d); })
+      .catch(function(e) { outErr("uiRecOutput", e); });
+  }
+
+  function uiRecordEdit() {
+    ZOHO.CRM.UI.Record.edit({
+      Entity: document.getElementById("uiRecModule").value,
+      RecordID: document.getElementById("uiRecId").value
+    }).then(function(d) { out("uiRecOutput", d); })
+      .catch(function(e) { outErr("uiRecOutput", e); });
+  }
+
+  function uiRecordPopulate() {
+    var data = safeJSON(document.getElementById("uiRecPopData").value);
+    if (!data) return;
+    ZOHO.CRM.UI.Record.populate(data)
+      .then(function(d) { out("uiRecOutput", d); })
+      .catch(function(e) { outErr("uiRecOutput", e); });
+  }
+
+  function uiPopupClose() {
+    ZOHO.CRM.UI.Popup.close()
+      .then(function(d) { out("uiPopupOutput", d); })
+      .catch(function(e) { outErr("uiPopupOutput", e); });
+  }
+
+  function uiPopupCloseReload() {
+    ZOHO.CRM.UI.Popup.closeReload()
+      .then(function(d) { out("uiPopupOutput", d); })
+      .catch(function(e) { outErr("uiPopupOutput", e); });
+  }
+
+  function uiDialerMax() {
+    ZOHO.CRM.UI.Dialer.maximize()
+      .then(function(d) { out("uiDialerOutput", d); })
+      .catch(function(e) { outErr("uiDialerOutput", e); });
+  }
+
+  function uiDialerMin() {
+    ZOHO.CRM.UI.Dialer.minimize()
+      .then(function(d) { out("uiDialerOutput", d); })
+      .catch(function(e) { outErr("uiDialerOutput", e); });
+  }
+
+  function uiDialerNotify() {
+    ZOHO.CRM.UI.Dialer.notify()
+      .then(function(d) { out("uiDialerOutput", d); })
+      .catch(function(e) { outErr("uiDialerOutput", e); });
+  }
+
+  function uiWidgetOpen() {
+    var msg = safeJSON(document.getElementById("uiWidgetMsg").value);
+    if (!msg) return;
+    ZOHO.CRM.UI.Widget.open({
+      Entity: document.getElementById("uiWidgetEntity").value,
+      Message: msg
+    }).then(function(d) { out("uiWidgetOutput", d); })
+      .catch(function(e) { outErr("uiWidgetOutput", e); });
+  }
+
+  // ============================================================
+  //  CONNECTION
+  // ============================================================
+  function invokeConnection() {
+    var params = safeJSON(document.getElementById("connParams").value) || {};
+    var headers = safeJSON(document.getElementById("connHeaders").value) || {};
+    ZOHO.CRM.CONNECTION.invoke(document.getElementById("connName").value, {
+      url: document.getElementById("connUrl").value,
+      method: document.getElementById("connMethod").value,
+      parameters: params,
+      headers: headers,
+      param_type: parseInt(document.getElementById("connParamType").value)
+    }).then(function(d) { out("connOutput", d); })
+      .catch(function(e) { outErr("connOutput", e); });
+  }
+
+  // ============================================================
+  //  CONNECTOR
+  // ============================================================
+  function connectorAuthorize() {
+    var ns = document.getElementById("connectorAuthNs").value;
+    if (!ns) { alert("Please enter a connector namespace"); return; }
+    ZOHO.CRM.CONNECTOR.authorize(ns)
+      .then(function(d) { out("connectorAuthOutput", d); })
+      .catch(function(e) { outErr("connectorAuthOutput", e); });
+  }
+
+  function connectorInvokeAPI() {
+    var ns = document.getElementById("connectorApiNs").value;
+    if (!ns) { alert("Please enter a connector API namespace"); return; }
+    var data = safeJSON(document.getElementById("connectorApiData").value);
+    if (!data) return;
+    ZOHO.CRM.CONNECTOR.invokeAPI(ns, data)
+      .then(function(d) { out("connectorApiOutput", d); })
+      .catch(function(e) { outErr("connectorApiOutput", e); });
+  }
+
+  function connectorInvokeFileUpload() {
+    var ns = document.getElementById("connectorFileNs").value;
+    if (!ns) { alert("Please enter a connector API namespace"); return; }
+    var fileInput = document.getElementById("connectorFileInput");
+    if (!fileInput.files.length) { alert("Please select a file"); return; }
+    var file = fileInput.files[0];
+    var fileType = file.type || "application/octet-stream";
+    var vars = safeJSON(document.getElementById("connectorFileVars").value) || {};
+    var data = {
+      "VARIABLES": vars,
+      "CONTENT_TYPE": "multipart",
+      "PARTS": [
+        { "headers": { "Content-Type": "application/json" }, "content": { "mimeType": fileType, "description": "File upload via widget", "title": file.name } },
+        { "headers": { "Content-Disposition": "file;" }, "content": "__FILE__" }
+      ],
+      "FILE": { "fileParam": "content", "file": file }
+    };
+    ZOHO.CRM.CONNECTOR.invokeAPI(ns, data)
+      .then(function(d) { out("connectorFileOutput", d); })
+      .catch(function(e) { outErr("connectorFileOutput", e); });
+  }
+
+  // ============================================================
+  //  HTTP
+  // ============================================================
+  function httpRequest() {
+    var method = document.getElementById("httpMethod").value;
+    var request = { url: document.getElementById("httpUrl").value };
+    var headers = safeJSON(document.getElementById("httpHeaders").value);
+    var params = safeJSON(document.getElementById("httpParams").value);
+    var body = safeJSON(document.getElementById("httpBody").value);
+    if (headers) request.headers = headers;
+    if (params) request.params = params;
+    if (body) request.body = body;
+    ZOHO.CRM.HTTP[method](request)
+      .then(function(d) { out("httpOutput", d); })
+      .catch(function(e) { outErr("httpOutput", e); });
+  }
+
+  // ============================================================
+  //  FUNCTIONS
+  // ============================================================
+  function executeFunction() {
+    var args = safeJSON(document.getElementById("funcArgs").value);
+    if (!args) return;
+    ZOHO.CRM.FUNCTIONS.execute(document.getElementById("funcName").value, {
+      arguments: JSON.stringify(args)
+    }).then(function(d) { out("funcOutput", d); })
+      .catch(function(e) { outErr("funcOutput", e); });
+  }
+</script>
+
+</body>
+</html>
